@@ -16,11 +16,20 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
-_visited = {}
-def basename_attach(path):
+from base64 import b64decode
+import uuid
+
+def basename_attach(path, meta):
+    if 'attach_file' not in meta : meta['attach_file'] = {}
     bn = os.path.basename(path)
-    _visited[bn] = path
+    meta['attach_file'][bn] = path
     return bn
+
+def data_attach(data,meta):
+    if 'attach_data' not in meta : meta['attach_data'] = {}
+    id = uuid.uuid4()
+    meta['attach_data'][id] = b64decode(data)
+    return id
 
 class MailExporter(TemplateExporter):
     """
@@ -29,19 +38,15 @@ class MailExporter(TemplateExporter):
     def __init__(self, config=None, **kw):
         """
         Public constructor
-    
+
         Parameters
         ----------
         config : config
             User configuration instance.
-        extra_loaders : list[of Jinja Loaders]
-            ordered list of Jinja loader to find templates. Will be tried in order
-            before the default FileSystem ones.
-        template : str (optional, kw arg)
-            Template to use when exporting.
         """
         super(MailExporter, self).__init__(config=config, **kw)
-	self.register_filter('basename_attach', basename_attach)
+        self.register_filter('basename_attach', basename_attach)
+        self.register_filter('data_attach', data_attach)
 
     @default('file_extension')
     def _file_extension_default(self):
@@ -57,45 +62,44 @@ class MailExporter(TemplateExporter):
     def _raw_mimetypes_default(self):
         return ['text/markdown', 'text/html', '']
 
-    @property
-    def default_config(self):
-        c = Config({
-            'ExtractOutputPreprocessor': {'enabled': True},
-            'NbConvertBase': {
-                'display_data_priority': ['text/html',
-                                          'text/markdown',
-                                          'image/svg+xml',
-                                          'text/latex',
-                                          'image/png',
-                                          'image/jpeg',
-                                          'text/plain'
-                                          ]
-            },
 
-        })
-        c.merge(super(MailExporter, self).default_config)
-        return c
+    def from_notebook_node(self, nb, resources=None, **kw):
+        import pdb; pdb.set_trace()
+        output, resources = super(MailExporter, self).from_notebook_node(nb, resources=resources, **kw)
 
 
-
-
-
-class MimePostProcessor(PostProcessorBase):
-    def postprocess(self, input):
         msg = MIMEMultipart('alternative')
 
-        msg['Subject'] = input
+        msg['Subject'] = resources['metadata']['name']
 
-        with open(input) as f:
-          msg.attach(MIMEText(f.read(), 'html'))
+        msg.attach(MIMEText(output, 'html'))
 
-        for base, iname in _visited.items():
-          with open(iname) as f:
-            img = MIMEImage(f.read())
-            img.add_header('Content-ID', '<%s>' % base)
-            msg.attach(img)
-          os.remove(iname)
+        if 'attach_data' in resources['metadata']:
+            for id, img in resources['metadata']['attach_data'].items():
+              img = MIMEImage(img)
+              img.add_header('Content-ID', '<%s>' % id)
+              msg.attach(img)
 
-        with open(input, 'w') as f:
-            f.write(msg.as_string())
+        output = msg.as_string()
+        return output, resources
+
+
+class PostProcessor(PostProcessorBase):
+    import smtplib
+    import os
+    import sys
+    def postprocess(self, input):
+	# Heavily borrowed from https://www.mkyong.com/python/how-do-send-email-in-python-via-smtplib/
+	to = os.getenv("TO")
+	gmail_user = os.getenv("GMAIL_USER")
+	gmail_pwd = os.getenv("GMAIL_PASS")
+	smtpserver = smtplib.SMTP("smtp.gmail.com",587)
+	smtpserver.ehlo()
+	smtpserver.starttls()
+	smtpserver.login(gmail_user, gmail_pwd)
+
+	with open(input) as f:
+	    smtpserver.sendmail(gmail_user, to, f.read())
+
+	smtpserver.close()
 

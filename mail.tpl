@@ -40,16 +40,16 @@
 {% endblock stream %}
 
 {% block data_svg %}
-<img src="cid:{{ output.metadata.filenames['image/svg+xml'] | basename_attach }}"/>
+<img src="cid:{{ output.data['image/svg+xml'] | data_attach(resources['metadata']) }}"/>
 {% endblock data_svg %}
 
 {% block data_png %}
-<img src="cid:{{ output.metadata.filenames['image/png'] | basename_attach }}"/>
+<img src="cid:{{ output.data['image/png'] | data_attach(resources['metadata']) }}"/>
 
 {% endblock data_png %}
 
 {% block data_jpg %}
-<img src="cid:{{ output.metadata.filenames['image/jpeg'] | basename_attach }}"/>
+<img src="cid:{{ output.data['image/jpeg'] | data_attach(resources['metadata']) }}"/>
 {% endblock data_jpg %}
 
 {% block data_latex %}
