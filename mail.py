@@ -6,6 +6,9 @@
 
 import os
 
+import smtplib
+import sys
+
 from traitlets import default
 from traitlets.config import Config
 
@@ -64,7 +67,6 @@ class MailExporter(TemplateExporter):
 
 
     def from_notebook_node(self, nb, resources=None, **kw):
-        import pdb; pdb.set_trace()
         output, resources = super(MailExporter, self).from_notebook_node(nb, resources=resources, **kw)
 
 
@@ -84,10 +86,7 @@ class MailExporter(TemplateExporter):
         return output, resources
 
 
-class PostProcessor(PostProcessorBase):
-    import smtplib
-    import os
-    import sys
+class SendMailPostProcessor(PostProcessorBase):
     def postprocess(self, input):
 	# Heavily borrowed from https://www.mkyong.com/python/how-do-send-email-in-python-via-smtplib/
 	to = os.getenv("TO")
