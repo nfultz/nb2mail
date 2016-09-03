@@ -9,7 +9,7 @@ import os
 import smtplib
 import sys
 
-from traitlets import default
+from traitlets import default, Unicode, Int
 from traitlets.config import Config
 
 from nbconvert.exporters.templateexporter import TemplateExporter
@@ -87,18 +87,21 @@ class MailExporter(TemplateExporter):
 
 
 class SendMailPostProcessor(PostProcessorBase):
+    
+    recipient = Unicode(os.getenv("TO"),help="Recipient address").tag(config=True)
+    smtp_user = Unicode(os.getenv("GMAIL_USER"),help="SMTP User" ).tag(config=True)
+    smtp_pass = Unicode(os.getenv("GMAIL_PASS"),help="SMTP pass" ).tag(config=True)
+    smtp_addr = Unicode("smtp.gmail.com", help="SMTP addr" ).tag(config=True)
+    smtp_port = Int(587, help="SMTP port" ).tag(config=True)
+
     def postprocess(self, input):
-	# Heavily borrowed from https://www.mkyong.com/python/how-do-send-email-in-python-via-smtplib/
-	to = os.getenv("TO")
-	gmail_user = os.getenv("GMAIL_USER")
-	gmail_pwd = os.getenv("GMAIL_PASS")
-	smtpserver = smtplib.SMTP("smtp.gmail.com",587)
+	" Heavily borrowed from https://www.mkyong.com/python/how-do-send-email-in-python-via-smtplib/ "
+	smtpserver = smtplib.SMTP(self.smtp_addr,self.smtp_port)
 	smtpserver.ehlo()
 	smtpserver.starttls()
-	smtpserver.login(gmail_user, gmail_pwd)
+	smtpserver.login(self.smtp_user, self.smtp_pass)
 
 	with open(input) as f:
-	    smtpserver.sendmail(gmail_user, to, f.read())
+	    smtpserver.sendmail(self.smtp_user, self.recipient, f.read())
 
 	smtpserver.close()
-
