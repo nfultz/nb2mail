@@ -8,4 +8,5 @@ setup(name='nb2mail',
       author_email='nfultz@gmail.com',
       license='BSD',
       packages=['nb2mail'],
+      install_requires=['jupyter'],
       zip_safe=False)
