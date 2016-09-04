@@ -9,4 +9,14 @@ setup(name='nb2mail',
       license='BSD',
       packages=['nb2mail'],
       install_requires=['jupyter'],
-      zip_safe=False)
+      zip_safe=False,
+      include_package_data=True,
+      entry_points = {
+          'nbconvert.exporters': [
+              'mail = nb2mail:MailExporter',
+          ],
+          'nbconvert.postprocessors': [
+              'sendmail = nb2mail:SendMailPostProcessor',
+          ]
+      }
+)

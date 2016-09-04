@@ -65,6 +65,14 @@ class MailExporter(TemplateExporter):
     def _raw_mimetypes_default(self):
         return ['text/markdown', 'text/html', '']
 
+    @property
+    def template_path(self):
+        """
+        We want to inherit from HTML template, and have template under
+        `./templates/` so append it to the search path. (see next section)
+        """
+        return super(MailExporter, self).template_path+[os.path.join(os.path.dirname(__file__), "templates")]
+
 
     def from_notebook_node(self, nb, resources=None, **kw):
         output, resources = super(MailExporter, self).from_notebook_node(nb, resources=resources, **kw)
