@@ -45,5 +45,13 @@ and then simply run
 ## TODO
 
   * Prerender Math - no js in email
-  * Plotly
+  * Plotly - here is a workaround:
+        # py.iplot(fig, filename=‘dcm_ctr_subplots’)
+        # The above line is what you normally use to show your plots in the notebook
+        # You no longer need that and just need the stuff below
+
+        from IPython.display import Image
+
+        py.image.save_as(fig, filename='yahoo_dcm_ctr_subplots.png')
+        Image('yahoo_dcm_ctr_subplots.png')
   * Configable email headers
