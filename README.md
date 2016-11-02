@@ -46,6 +46,7 @@ and then simply run
 
   * Prerender Math - no js in email
   * Plotly - here is a workaround:
+
         # py.iplot(fig, filename=‘dcm_ctr_subplots’)
         # The above line is what you normally use to show your plots in the notebook
         # You no longer need that and just need the stuff below
