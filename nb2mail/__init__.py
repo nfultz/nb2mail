@@ -93,6 +93,8 @@ class MailExporter(TemplateExporter):
         else:
             if nb['metadata']['nb2mail'].get('recipients') != None:
                 msg['To'] = json.dumps(nb['metadata']['nb2mail'].get('recipients'))
+            if nb['metadata']['nb2mail'].get('from') != None:
+                msg['From'] = nb['metadata']['nb2mail'].get('from')
             if nb['metadata']['nb2mail'].get('subject') != None:
                 msg['Subject'] = nb['metadata']['nb2mail'].get('subject')
 
