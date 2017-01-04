@@ -105,7 +105,7 @@ class MailExporter(TemplateExporter):
 
                 constructors = {"text": MIMEText, "image": MIMEImage, "audio": MIMEAudio}
 
-                with open(input, mode) as f:
+                with open(fileToSend, mode) as fp:
                     if maintype in constructors:
                         # Note: we should handle calculating the charset for text
                         attachment = constructors[maintype](fp.read(), _subtype=subtype)
