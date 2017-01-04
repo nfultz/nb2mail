@@ -88,44 +88,32 @@ class MailExporter(TemplateExporter):
         msg = MIMEMultipart('alternative')
 
 
-        if nb['metadata'].get('nb2mail') == None:
-            pass
-        else:
-            if nb['metadata']['nb2mail'].get('recipients') != None:
-                msg['To'] = json.dumps(nb['metadata']['nb2mail'].get('recipients'))
-            if nb['metadata']['nb2mail'].get('from') != None:
-                msg['From'] = nb['metadata']['nb2mail'].get('from')
-            if nb['metadata']['nb2mail'].get('subject') != None:
-                msg['Subject'] = nb['metadata']['nb2mail'].get('subject')
+        meta = nb['metadata'].get('nb2mail')
+        if meta :
+            for header in meta.keys() & {'To', 'From', 'Subject'}:
+                msg[header] = meta[header]
 
             # Email attachements
-            files = nb['metadata']['nb2mail'].get('attachments')
+            files = meta.get('attachments')
             for fileToSend in files or []:
                 ctype, encoding = mimetypes.guess_type(fileToSend)
                 if ctype is None or encoding is not None:
                     ctype = "application/octet-stream"
 
                 maintype, subtype = ctype.split("/", 1)
+                mode = 'r' + ('b' if maintype != "text" else '')
 
-                if maintype == "text":
-                    fp = open(fileToSend)
-                    # Note: we should handle calculating the charset
-                    attachment = MIMEText(fp.read(), _subtype=subtype)
-                    fp.close()
-                elif maintype == "image":
-                    fp = open(fileToSend, "rb")
-                    attachment = MIMEImage(fp.read(), _subtype=subtype)
-                    fp.close()
-                elif maintype == "audio":
-                    fp = open(fileToSend, "rb")
-                    attachment = MIMEAudio(fp.read(), _subtype=subtype)
-                    fp.close()
-                else:
-                    fp = open(fileToSend, "rb")
-                    attachment = MIMEBase(maintype, subtype)
-                    attachment.set_payload(fp.read())
-                    fp.close()
-                    encoders.encode_base64(attachment)
+                constructors = {"text": MIMEText, "image": MIMEImage, "audio": MIMEAudio}
+
+                with open(input, mode) as f:
+                    if maintype in constructors:
+                        # Note: we should handle calculating the charset for text
+                        attachment = constructors[maintype](fp.read(), _subtype=subtype)
+                    else:
+                        attachment = MIMEBase(maintype, subtype)
+                        attachment.set_payload(fp.read())
+                        encoders.encode_base64(attachment)
+
                 attachment.add_header("Content-Disposition", "attachment", filename=fileToSend)
                 msg.attach(attachment)
 
@@ -152,17 +140,6 @@ class SendMailPostProcessor(PostProcessorBase):
     smtp_addr = Unicode("smtp.gmail.com", help="SMTP addr" ).tag(config=True)
     smtp_port = Int(587, help="SMTP port" ).tag(config=True)
 
-    def list_conversion(self, container, default=[]):
-        result = default
-        if container == None:
-            pass
-        elif type(container) == list:
-            result = container
-        elif type(container) == str:
-            result = list(container)
-
-        return result
-
     def postprocess(self, input):
         " Heavily borrowed from https://www.mkyong.com/python/how-do-send-email-in-python-via-smtplib/ "
         smtpserver = smtplib.SMTP(self.smtp_addr,self.smtp_port)
@@ -173,9 +150,10 @@ class SendMailPostProcessor(PostProcessorBase):
         with open(input) as f:
             email = Parser().parse(f)
             # Set recipients from notebook metadata
-            email_to = json.loads(email.get('To'))
-            recipient = self.list_conversion(email_to, self.recipient)
+            # Multiple recipients can be comma seperated
+            self.recipient = email.get('To', self.recipient)
             f.seek(0)
 
-            smtpserver.sendmail(self.smtp_user, recipient, f.read())
+            smtpserver.sendmail(self.smtp_user, self.recipient.split(','), f.read())
+
         smtpserver.close()
