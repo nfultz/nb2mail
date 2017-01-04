@@ -90,7 +90,7 @@ class MailExporter(TemplateExporter):
 
         meta = nb['metadata'].get('nb2mail')
         if meta :
-            for header in meta.keys() & {'To', 'From', 'Subject'}:
+            for header in set(meta.keys()) & {'To', 'From', 'Subject'}:
                 msg[header] = meta[header]
 
             # Email attachements
