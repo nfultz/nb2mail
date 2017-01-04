@@ -9,7 +9,9 @@ send it via smtp.
 
 ## Usage
 
-`nb2mail` does not do anything by it self, it simply provides an export format ("mail") and postprocessor ("SendMailPostProcessor"). Please see the nbconvert documentation and example configuration for more information.
+`nb2mail` does not do anything by it self, it simply provides an export format
+("mail") and postprocessor ("SendMailPostProcessor"). Please see the nbconvert
+documentation and example configuration for more information.
 
 ## Example
 
@@ -17,7 +19,8 @@ To generate a mail to send later with another process (eg `sendmail`):
 
     jupyter nbconvert --execute --to mail notebook.ipynb
 
-To convert and also send a mail via gmail, you can set some environment variables, and declare a postprocessor with `--post`:
+To convert and also send a mail via gmail, you can set some environment
+variables, and declare a postprocessor with `--post`:
 
     export TO=example@example.ex GMAIL_USER=user GMAIL_PASS="*****"
     jupyter nbconvert --to mail --post=nb2mail.SendMailPostProcessor notebook.ipynb
@@ -38,6 +41,21 @@ and then simply run
 
     jupyter nbconvert --config config.py demo.ipynb  
 
+## Configuring Mail Headers
+
+In the notebook metadata, you can set mail headers by adding a `nb2mail` block:
+
+    "nb2mail": {
+    "attachments": [
+        "business_report_attachment.xlsx"
+    ],
+    "From": "reports@example.com",
+    "To": "person1@example.com, person2@example.com",
+    "Subject": "Business Report"
+    }
+
+You can specify multiple recipients by seperating them with commas.
+
 ## Refences
 
   * PyPI - https://pypi.python.org/pypi/nb2mail
@@ -45,6 +63,7 @@ and then simply run
 ## TODO
 
   * Prerender Math - no js in email
+  * Prettier templates
   * Plotly - here is a workaround:
 
         # py.iplot(fig, filename=‘dcm_ctr_subplots’)
@@ -55,4 +74,3 @@ and then simply run
 
         py.image.save_as(fig, filename='yahoo_dcm_ctr_subplots.png')
         Image('yahoo_dcm_ctr_subplots.png')
-  * Configable email headers
