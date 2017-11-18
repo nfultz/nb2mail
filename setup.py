@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='nb2mail',
-      version='0.2',
+      version='0.3',
       description='Convert notebooks to email',
       url='http://github.com/nfultz/nb2mail',
       download_url='https://github.com/nfultz/nb2mail/tarball/0.2',
