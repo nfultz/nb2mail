@@ -1,6 +1,6 @@
-#nb2mail - send a jupyter notebook as an email
+# nb2mail - send a jupyter notebook as an email
 
-This repo contains a `jupyter nbconvert` exporter to convert notebooks to multipart MIME, and a postprocessor to 
+This repo contains a `jupyter nbconvert` exporter to convert notebooks to multipart MIME, and a postprocessor to
 send it via smtp.
 
 ## Installation
@@ -39,7 +39,7 @@ Alternatively, you can configure the SMTP settings in a config file `config.py`:
 
 and then simply run
 
-    jupyter nbconvert --config config.py demo.ipynb  
+    jupyter nbconvert --config config.py demo.ipynb
 
 ## Configuring Mail Headers
 

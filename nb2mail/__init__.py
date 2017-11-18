@@ -85,7 +85,7 @@ class MailExporter(TemplateExporter):
         output, resources = super(MailExporter, self).from_notebook_node(nb, resources=resources, **kw)
 
 
-        msg = MIMEMultipart('alternative')
+        msg = MIMEMultipart('mixed')
 
 
         meta = nb['metadata'].get('nb2mail')
