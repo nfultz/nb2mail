@@ -1,5 +1,7 @@
 # nb2mail - send a jupyter notebook as an email
 
+[![PyPI version](https://badge.fury.io/py/nb2mail.svg)](https://badge.fury.io/py/nb2mail)
+
 This repo contains a `jupyter nbconvert` exporter to convert notebooks to multipart MIME, and a postprocessor to
 send it via smtp.
 
