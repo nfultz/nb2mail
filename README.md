@@ -11,18 +11,18 @@ send it via smtp.
 
 ## Usage
 
-`nb2mail` does not do anything by it self, it simply provides an export format
+`nb2mail` does not do anything by itself. It provides an export format
 ("mail") and postprocessor ("SendMailPostProcessor"). Please see the nbconvert
 documentation and example configuration for more information.
 
 ## Example
 
-To generate a mail to send later with another process (eg `sendmail`):
+To generate a mail and send it later with another process (eg `sendmail`):
 
     jupyter nbconvert --execute --to mail notebook.ipynb
 
-To convert and also send a mail via gmail, you can set some environment
-variables, and declare a postprocessor with `--post`:
+To convert and send a mail via gmail, you can set the environment
+variables and declare a postprocessor with `--post`:
 
     export TO=example@example.ex GMAIL_USER=user GMAIL_PASS="*****"
     jupyter nbconvert --to mail --post=nb2mail.SendMailPostProcessor notebook.ipynb
@@ -39,7 +39,7 @@ Alternatively, you can configure the SMTP settings in a config file `config.py`:
     c.SendMailPostProcessor.smtp_addr = 'smtp.gmail.com'
     c.SendMailPostProcessor.smtp_port = 587
 
-and then simply run
+and then run:
 
     jupyter nbconvert --config config.py demo.ipynb
 
