@@ -117,8 +117,8 @@ class MailExporter(TemplateExporter):
                 attachment.add_header("Content-Disposition", "attachment", filename=fileToSend)
                 msg.attach(attachment)
 
-        # Will only work if 'Subject' is not already set
-        msg['Subject'] = resources['metadata']['name']
+        if not 'Subject' in msg.keys():
+            msg['Subject'] = resources['metadata']['name']
 
         msg.attach(MIMEText(output, 'html'))
 
