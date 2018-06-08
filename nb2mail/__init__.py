@@ -64,7 +64,7 @@ class MailExporter(TemplateExporter):
 
     @default('template_file')
     def _template_file_default(self):
-        return 'mail'
+        return 'mail.tpl'
 
     output_mimetype = 'multipart/mixed'
 
