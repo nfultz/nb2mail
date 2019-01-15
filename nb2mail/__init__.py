@@ -146,7 +146,9 @@ class SendMailPostProcessor(PostProcessorBase):
         smtpserver = smtplib.SMTP(self.smtp_addr,self.smtp_port)
         smtpserver.ehlo()
         smtpserver.starttls()
-        smtpserver.login(self.smtp_user, self.smtp_pass)
+
+        if self.smtp_user and self.smtp_pass:
+            smtpserver.login(self.smtp_user, self.smtp_pass)
 
         with open(input) as f:
             email = Parser().parse(f)
