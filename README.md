@@ -58,6 +58,12 @@ In the notebook metadata, you can set mail headers by adding a `nb2mail` block:
 
 You can specify multiple recipients by seperating them with commas.
 
+## Disabling Pilcrows
+
+Since CSS doesn't render the same in email, you may want to disable the pilcrows after each section.
+
+    c.MailExporter.anchor_link_text = '' # disable pilcrow, requires nbconvert >= 5.2
+
 ## Refences
 
   * PyPI - https://pypi.python.org/pypi/nb2mail

@@ -1,7 +1,7 @@
 """Mail Exporter class"""
 
 # Copyright (c) Jupyter Development Team.
-# Copyright (c) Neal Fultz 2016
+# Copyright (c) Neal Fultz 2016, 2019
 # Distributed under the terms of the Modified BSD License.
 
 import os
@@ -14,7 +14,7 @@ import sys
 from traitlets import default, Unicode, Int
 from traitlets.config import Config
 
-from nbconvert.exporters.templateexporter import TemplateExporter
+from nbconvert.exporters.html import HTMLExporter
 from nbconvert.postprocessors.base import PostProcessorBase
 
 from email import encoders
@@ -41,7 +41,7 @@ def data_attach(data,meta):
     meta['attach_data'][id] = b64decode(data)
     return id
 
-class MailExporter(TemplateExporter):
+class MailExporter(HTMLExporter):
     """
     Exports to a mail document (.mail)
     """
@@ -82,6 +82,7 @@ class MailExporter(TemplateExporter):
 
 
     def from_notebook_node(self, nb, resources=None, **kw):
+
         output, resources = super(MailExporter, self).from_notebook_node(nb, resources=resources, **kw)
 
 
