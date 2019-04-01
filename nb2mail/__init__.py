@@ -45,6 +45,11 @@ class MailExporter(HTMLExporter):
     """
     Exports to a mail document (.mail)
     """
+    from_header = Unicode(help="From header").tag(config=True)
+    to_header = Unicode(help="Comma-separated To header").tag(config=True)
+    cc_header = Unicode(help="Comma-separated Cc header").tag(config=True)
+    subject_header = Unicode(help="Subject header").tag(config=True)
+
     def __init__(self, config=None, **kw):
         """
         Public constructor
@@ -88,38 +93,48 @@ class MailExporter(HTMLExporter):
 
         msg = MIMEMultipart('mixed')
 
+        meta = nb['metadata'].get('nb2mail', {})
+        # Set headers from configuration values (if non-blank)
+        for header, val in (
+            ('From', self.from_header),
+            ('To', self.to_header),
+            ('Cc', self.cc_header),
+            ('Subject', self.subject_header)):
+            if val:
+                msg[header] = val
 
-        meta = nb['metadata'].get('nb2mail')
-        if meta :
-            for header in set(meta.keys()) & {'To', 'From', 'Subject'}:
-                msg[header] = meta[header]
+        # Overrides from nb meta
+        for header in set(meta.keys()) & {'From', 'To', 'Cc', 'Subject'}:
+            del msg[header]  # ensure that we are not adding duplicate header
+            msg[header] = meta[header]
 
-            # Email attachements
-            files = meta.get('attachments')
-            for fileToSend in files or []:
-                ctype, encoding = mimetypes.guess_type(fileToSend)
-                if ctype is None or encoding is not None:
-                    ctype = "application/octet-stream"
-
-                maintype, subtype = ctype.split("/", 1)
-                mode = 'r' + ('b' if maintype != "text" else '')
-
-                constructors = {"text": MIMEText, "image": MIMEImage, "audio": MIMEAudio}
-
-                with open(fileToSend, mode) as fp:
-                    if maintype in constructors:
-                        # Note: we should handle calculating the charset for text
-                        attachment = constructors[maintype](fp.read(), _subtype=subtype)
-                    else:
-                        attachment = MIMEBase(maintype, subtype)
-                        attachment.set_payload(fp.read())
-                        encoders.encode_base64(attachment)
-
-                attachment.add_header("Content-Disposition", "attachment", filename=fileToSend)
-                msg.attach(attachment)
-
+        # Use notebook name if there's no subject
         if not 'Subject' in msg.keys():
             msg['Subject'] = resources['metadata']['name']
+
+        # Email attachements
+        files = meta.get('attachments')
+        for fileToSend in files or []:
+            ctype, encoding = mimetypes.guess_type(fileToSend)
+            if ctype is None or encoding is not None:
+                ctype = "application/octet-stream"
+
+            maintype, subtype = ctype.split("/", 1)
+            mode = 'r' + ('b' if maintype != "text" else '')
+
+            constructors = {"text": MIMEText, "image": MIMEImage, "audio": MIMEAudio}
+
+            with open(fileToSend, mode) as fp:
+                if maintype in constructors:
+                    # Note: we should handle calculating the charset for text
+                    attachment = constructors[maintype](fp.read(), _subtype=subtype)
+                else:
+                    attachment = MIMEBase(maintype, subtype)
+                    attachment.set_payload(fp.read())
+                    encoders.encode_base64(attachment)
+
+            attachment.add_header("Content-Disposition", "attachment", filename=fileToSend)
+            msg.attach(attachment)
 
         msg.attach(MIMEText(output, 'html'))
 
@@ -154,9 +169,11 @@ class SendMailPostProcessor(PostProcessorBase):
             email = Parser().parse(f)
             # Set recipients from notebook metadata
             # Multiple recipients can be comma seperated
-            self.recipient = email.get('To', self.recipient)
-            f.seek(0)
-
-            smtpserver.sendmail(self.smtp_user, self.recipient.split(','), f.read())
+            recipients_from_headers = ','.join(filter(None, [email.get('To', ''), email.get('Cc', '')]))
+            if not recipients_from_headers:
+                email['To'] = self.recipient
+            else:
+                self.recipient = recipients_from_headers
+            smtpserver.sendmail(self.smtp_user, self.recipient.split(','), email.as_string())
 
         smtpserver.close()
