@@ -11,7 +11,7 @@ import mimetypes
 import smtplib
 import sys
 
-from traitlets import default, Unicode, Int
+from traitlets import default, Unicode, Int, Dict
 from traitlets.config import Config
 
 from nbconvert.exporters.html import HTMLExporter
@@ -45,10 +45,13 @@ class MailExporter(HTMLExporter):
     """
     Exports to a mail document (.mail)
     """
-    from_header = Unicode(help="From header").tag(config=True)
-    to_header = Unicode(help="Comma-separated To header").tag(config=True)
-    cc_header = Unicode(help="Comma-separated Cc header").tag(config=True)
-    subject_header = Unicode(help="Subject header").tag(config=True)
+
+    headers = Dict(help="Mail Headers", traits={
+        'from': Unicode(help="From header"),
+        'to': Unicode(help="Comma-separated To header"),
+        'cc': Unicode(help="Comma-separated Cc header"),
+        'subject': Unicode(help="Subject header")
+    }).tag(config=True)
 
     def __init__(self, config=None, **kw):
         """
@@ -90,20 +93,14 @@ class MailExporter(HTMLExporter):
 
         output, resources = super(MailExporter, self).from_notebook_node(nb, resources=resources, **kw)
 
-
         msg = MIMEMultipart('mixed')
 
-        meta = nb['metadata'].get('nb2mail', {})
         # Set headers from configuration values (if non-blank)
-        for header, val in (
-            ('From', self.from_header),
-            ('To', self.to_header),
-            ('Cc', self.cc_header),
-            ('Subject', self.subject_header)):
-            if val:
-                msg[header] = val
+        for header, val in self.headers.items():
+            msg[header] = val
 
         # Overrides from nb meta
+        meta = nb['metadata'].get('nb2mail', {})
         for header in set(meta.keys()) & {'From', 'To', 'Cc', 'Subject'}:
             del msg[header]  # ensure that we are not adding duplicate header
             msg[header] = meta[header]
@@ -167,13 +164,15 @@ class SendMailPostProcessor(PostProcessorBase):
 
         with open(input) as f:
             email = Parser().parse(f)
+
+        if not self.recipient:
             # Set recipients from notebook metadata
             # Multiple recipients can be comma seperated
-            recipients_from_headers = ','.join(filter(None, [email.get('To', ''), email.get('Cc', '')]))
-            if not recipients_from_headers:
-                email['To'] = self.recipient
-            else:
-                self.recipient = recipients_from_headers
-            smtpserver.sendmail(self.smtp_user, self.recipient.split(','), email.as_string())
+            self.recipient = ','.join(filter(None, [email.get('To', ''), email.get('Cc', '')]))
+        else:
+            # Set To header from config
+            email['To'] = self.recipient
+
+        smtpserver.sendmail(self.smtp_user, self.recipient.split(','), email.as_string())
 
         smtpserver.close()
