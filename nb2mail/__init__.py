@@ -166,9 +166,9 @@ class SendMailPostProcessor(PostProcessorBase):
             email = Parser().parse(f)
 
         if not self.recipient:
-            # Set recipients from notebook metadata
+            # Set recipients from .mail file
             # Multiple recipients can be comma seperated
-            self.recipient = ','.join(filter(None, [email.get('To', ''), email.get('Cc', '')]))
+            self.recipient = ','.join(filter(None, [email.get('To'), email.get('Cc')]))
         else:
             # Set To header from config
             email['To'] = self.recipient
