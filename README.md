@@ -21,6 +21,7 @@ To generate a mail and send it later with another process (eg `sendmail`):
 
     jupyter nbconvert --execute --to mail notebook.ipynb
 
+### SMTP Example
 To convert and send a mail via gmail, you can set the environment
 variables and declare a postprocessor with `--post`:
 
@@ -42,6 +43,10 @@ Alternatively, you can configure the SMTP settings in a config file `config.py`:
 and then run:
 
     jupyter nbconvert --config config.py demo.ipynb
+
+### 3rd party email distributor Example
+Insread of using SMTP to send emails, one can use 3rd party provider.  
+This is an example for using [mailgun](examples/mailgun.ipynb) as a 3rd party provider
 
 ## Configuring Mail Headers
 
