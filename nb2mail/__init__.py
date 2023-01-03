@@ -74,7 +74,7 @@ class MailExporter(HTMLExporter):
     @default('template_file')
     def _template_file_default(self):
         # return os.path.join(os.path.dirname(__file__), "templates", "mail.tpl")
-        "mail.tpl"
+        return "mail.tpl"
 
     output_mimetype = ''
 
