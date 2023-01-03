@@ -45,7 +45,7 @@ and then run:
     jupyter nbconvert --config config.py demo.ipynb
 
 ### 3rd party email distributor Example
-Insread of using SMTP to send emails, one can use 3rd party provider.  
+Instead of using SMTP to send emails, one can use 3rd party provider.  
 This is an example for using [mailgun](examples/mailgun.ipynb) as a 3rd party provider
 
 ## Configuring Mail Headers
