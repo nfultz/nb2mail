@@ -62,6 +62,9 @@ class MailExporter(HTMLExporter):
         config : config
             User configuration instance.
         """
+        if sys.version_info[0] == 3:
+            # https://stackoverflow.com/questions/27376907/how-to-detect-python-version-2-or-3-in-script
+            self.template_file=os.path.join(os.path.dirname(__file__), "templates", "mail.tpl")
         super(MailExporter, self).__init__(config=config, **kw)
         self.register_filter('basename_attach', basename_attach)
         self.register_filter('data_attach', data_attach)
@@ -72,9 +75,13 @@ class MailExporter(HTMLExporter):
 
     @default('template_file')
     def _template_file_default(self):
-        return 'mail.tpl'
+        return "mail.tpl"
 
-    output_mimetype = 'multipart/mixed'
+    if sys.version_info[0] == 2:
+        # https://stackoverflow.com/questions/27376907/how-to-detect-python-version-2-or-3-in-script
+        output_mimetype = 'multipart/mixed'
+    else:
+        output_mimetype = ''
 
     @default('raw_mimetypes')
     def _raw_mimetypes_default(self):
