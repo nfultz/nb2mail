@@ -154,12 +154,14 @@ class MailExporter(HTMLExporter):
 
 class SendMailPostProcessor(PostProcessorBase):
 
+    sender = Unicode(os.getenv("FROM", ''), help="Sender address").tag(config=True)
     recipient = Unicode(os.getenv("TO", ''), help="Recipient address").tag(config=True)
-    smtp_user = Unicode(os.getenv("GMAIL_USER", ''), help="SMTP User" ).tag(config=True)
-    smtp_pass = Unicode(os.getenv("GMAIL_PASS", ''), help="SMTP pass" ).tag(config=True)
-    smtp_addr = Unicode("smtp.gmail.com", help="SMTP addr" ).tag(config=True)
-    smtp_port = Int(587, help="SMTP port" ).tag(config=True)
-
+    smtp_user = Unicode(os.getenv("SMTP_USER", ''), help="SMTP User" ).tag(config=True)
+    smtp_pass = Unicode(os.getenv("SMTP_PASS", ''), help="SMTP pass" ).tag(config=True)
+    smtp_addr = Unicode(os.getenv("SMTP_ADDR", ''), help="SMTP addr" ).tag(config=True)
+    smtp_port = Int(os.getenv("SMTP_PORT", '587'), help="SMTP port" ).tag(config=True)
+    smtp_port = smtp_port.default_value
+    
     def postprocess(self, input):
         " Heavily borrowed from https://www.mkyong.com/python/how-do-send-email-in-python-via-smtplib/ "
         smtpserver = smtplib.SMTP(self.smtp_addr,self.smtp_port)
@@ -180,6 +182,6 @@ class SendMailPostProcessor(PostProcessorBase):
             # Set To header from config
             email['To'] = self.recipient
 
-        smtpserver.sendmail(self.smtp_user, self.recipient.split(','), email.as_string())
+        smtpserver.sendmail(self.sender, self.recipient.split(','), email.as_string())
 
         smtpserver.close()
