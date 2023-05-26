@@ -7,7 +7,6 @@ send it via smtp.
 
 ## Installation
 
-    pip install nb2mail
     pip install git+https://github.com/Thessal/nb2mail.git
 
 ## Usage
@@ -27,6 +26,7 @@ To generate a mail and send it later with another process (eg `sendmail`):
 ### SMTP Example
 To convert and send a mail via gmail, you can set the environment
 variables and declare a postprocessor with `--post`:
+
     export FROM=sender@domain.abc TO=receipent@domain.def
     export SMTP_ADDR=email-smtp.region.amazonaws.com SMTP_PORT=587
     export SMTP_USER=aws_ses_smtp_auth SMTP_PASS=`echo $SMTP_HASH | base64 -d` 
