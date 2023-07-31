@@ -7,13 +7,15 @@ send it via smtp.
 
 ## Installation
 
-    pip install nb2mail
+    pip install git+https://github.com/Thessal/nb2mail.git
 
 ## Usage
 
 `nb2mail` does not do anything by itself. It provides an export format
 ("mail") and postprocessor ("SendMailPostProcessor"). Please see the nbconvert
 documentation and example configuration for more information.
+
+NOTE: BOTH sender and recipient email identities have to be verified to use AWS SES SMTP
 
 ## Example
 
@@ -25,7 +27,9 @@ To generate a mail and send it later with another process (eg `sendmail`):
 To convert and send a mail via gmail, you can set the environment
 variables and declare a postprocessor with `--post`:
 
-    export TO=example@example.ex GMAIL_USER=user GMAIL_PASS="*****"
+    export FROM=sender@domain.abc TO=receipent@domain.def
+    export SMTP_ADDR=email-smtp.region.amazonaws.com SMTP_PORT=587
+    export SMTP_USER=aws_ses_smtp_auth SMTP_PASS=`echo $SMTP_HASH | base64 -d` 
     jupyter nbconvert --to mail --post=nb2mail.SendMailPostProcessor notebook.ipynb
 
 Alternatively, you can configure the SMTP settings in a config file `config.py`:
